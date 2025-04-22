@@ -15,6 +15,9 @@ class TAP30Dataset(Dataset):
     ----------
     csv_path : str
         Path to the CSV file containing the TAP30 data.
+    transform : callable, optional
+        A function/transform that takes a feature tensor and returns a transformed
+        version. Default: None.
 
     Attributes
     ----------
@@ -25,9 +28,11 @@ class TAP30Dataset(Dataset):
         [hour_of_day, day, row, col].
     targets : torch.Tensor
         Tensor of shape (n_samples,) containing the demand values.
+    transform : callable
+        The transform to be applied to the features.
     """
 
-    def __init__(self, csv_path):
+    def __init__(self, csv_path, transform=None):
         # Read the CSV file
         self.data = pd.read_csv(csv_path)
 
@@ -36,6 +41,8 @@ class TAP30Dataset(Dataset):
             self.data[["hour_of_day", "day", "row", "col"]].values, dtype=torch.float32
         )
         self.targets = torch.tensor(self.data["demand"].values, dtype=torch.float32)
+
+        self.transform = transform
 
     def __len__(self):
         """
@@ -62,15 +69,33 @@ class TAP30Dataset(Dataset):
         tuple
             A tuple containing:
                 - features (torch.Tensor): Tensor of shape (4,) containing
-                  [hour_of_day, day, row, col]
+                  [hour_of_day, day, row, col]. If transform is set,
+                  returns the transformed features.
                 - target (torch.Tensor): Scalar tensor containing the demand value
         """
-        return self.features[idx], self.targets[idx]
+        features = self.features[idx]
+        targets = self.targets[idx]
+
+        if self.transform:
+            features = self.transform(features)
+
+        return features, targets
+
+
+def normalize_features(x):
+    x[0] /= 23.0  # hour_of_day
+    x[1] /= 365.0  # day
+    x[2] /= 7.0  # row
+    x[3] /= 7.0  # col
+
+    return x
 
 
 if __name__ == "__main__":
     # Create dataset instance
-    dataset = TAP30Dataset("artifacts/data/tap30/train.csv")
+    dataset = TAP30Dataset(
+        "artifacts/data/tap30/train.csv", transform=normalize_features
+    )
 
     # Print dataset size
     print(f"Dataset size: {len(dataset)}")
