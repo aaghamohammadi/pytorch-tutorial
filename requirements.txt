@@ -3,6 +3,6 @@ black[jupyter]==24.10.0
 isort==6.0.1
 pandas==2.2.3
 pre-commit==v4.2.0
-torch==2.6.0+cu126
+torch==2.7.0+cu126
 torchaudio==2.6.0+cu126
 torchvision==0.21.0+cu126
