@@ -226,29 +226,3 @@ def evaluate(dataloader, model, loss_fn):
     print(f"Mean IoU: {mean_iou:.2f}%")
 
     return val_loss, pixel_accuracy, mean_iou
-
-
-# Create dataloaders
-batch_size = 8
-trainval_loader = DataLoader(trainvalset, batch_size=batch_size, shuffle=True)
-test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False)
-
-# Define loss function and optimizer
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
-
-# Training loop
-epochs = 10
-print("Starting training...")
-for epoch in range(epochs):
-    print(f"Epoch {epoch+1}/{epochs}")
-    train_loss = train_epoch(trainval_loader, model, criterion, optimizer)
-
-    # Evaluate model every 2 epochs
-    if (epoch + 1) % 2 == 0:
-        print("Evaluating model...")
-        evaluate(test_loader, model, criterion)
-
-# Final evaluation
-print("Final evaluation on test data...")
-evaluate(test_loader, model, criterion)
